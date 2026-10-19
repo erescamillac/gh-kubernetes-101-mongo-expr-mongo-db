@@ -1,0 +1,34 @@
+##--minikube installation instructions (Windows 11)--##
+
+Step 1: Download the latest minikube installer:
+
+(on MS PowerShell) ::
+
+New-Item -Path 'c:\' -Name 'minikube' -ItemType Directory -Force
+$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -OutFile 'c:\minikube\minikube.exe' -Uri 'https://github.com/kubernetes/minikube/releases/latest/download/minikube-windows-amd64.exe' -UseBasicParsing
+
+
+Step 2: Add the minikube.exe binary to your PATH.
+**Make sure to run PowerShell as Administrator.
+
+$oldPath = [Environment]::GetEnvironmentVariable('Path', [EnvironmentVariableTarget]::Machine)
+if ($oldPath.Split(';') -inotcontains 'C:\minikube'){
+  [Environment]::SetEnvironmentVariable('Path', $('{0};C:\minikube' -f $oldPath), [EnvironmentVariableTarget]::Machine)
+}
+
+
+//**------
+PS C:\> $oldPath = [Environment]::GetEnvironmentVariable('Path', [EnvironmentVariableTarget]::Machine)
+PS C:\> if ($oldPath.Split(';') -inotcontains 'C:\minikube'){
+>>   [Environment]::SetEnvironmentVariable('Path', $('{0};C:\minikube' -f $oldPath), [EnvironmentVariableTarget]::Machine)
+>> }
+PS C:\> $env:PATH
+C:\Program Files\PowerShell\7;C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot\bin;C:\Python313\Scripts\;C:\Python313\;C:\Instaladores_EEC\Instalador_Oracle_Database_19c_Win_11\WINDOWS.X64_193000_db_home\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\Java\jdk-10.0.2\bin;C:\Apache_Maven\apache-maven-3.9.9-bin\apache-maven-3.9.9\bin;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Git\cmd;C:\Program Files\GitHub CLI\;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\php848;C:\ProgramData\ComposerSetup\bin;C:\Program Files\MySQL\MySQL Server 8.0\bin;C:\Program Files\PostgreSQL\14\bin;C:\Program Files (x86)\Microsoft SQL Server\170\Tools\Binn\;C:\Program Files\Microsoft SQL Server\170\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\180\Tools\Binn\;C:\Program Files\Microsoft SQL Server\170\DTS\Binn\;C:\Program Files\Amazon\AWSCLIV2\;C:\Temp\lightsailctl;C:\sqlcl\bin;C:\Program Files\PowerShell\7\;C:\Program Files\Calibre2\;C:\Program Files\WSL\;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\erick\AppData\Local\Programs\Python\Launcher\;C:\Users\erick\AppData\Local\Microsoft\WindowsApps;C:\Users\erick\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\JetBrains\IntelliJ IDEA 2024.2.3\bin;C:\Users\erick\AppData\Local\GitHubDesktop\bin;C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2024.3.3\bin;C:\Users\erick\AppData\Roaming\npm;C:\Users\erick\AppData\Roaming\Composer\vendor\bin;C:\Users\erick\AppData\Local\Microsoft\WinGet\Packages\DenoLand.Deno_Microsoft.Winget.Source_8wekyb3d8bbwe;C:\Users\erick\AppData\Local\Microsoft\WinGet\Packages\yt-dlp.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-N-124716-g054dffd133-win64-gpl\bin;C:\Users\erick\AppData\Local\Microsoft\WinGet\Packages\yt-dlp.yt-dlp_Microsoft.Winget.Source_8wekyb3d8bbwe
+PS C:\> [Enviroment]::GetEnviromentVariable('Path', [EnvironmentVariableTarget]::Machine)
+InvalidOperation: No se encuentra el tipo [Enviroment].
+PS C:\> [Environment]::GetEnvironmentVariable('Path', [EnvironmentVariableTarget]::Machine)
+C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot\bin;C:\Python313\Scripts\;C:\Python313\;C:\Instaladores_EEC\Instalador_Oracle_Database_19c_Win_11\WINDOWS.X64_193000_db_home\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\Java\jdk-10.0.2\bin;C:\Apache_Maven\apache-maven-3.9.9-bin\apache-maven-3.9.9\bin;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Git\cmd;C:\Program Files\GitHub CLI\;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\php848;C:\ProgramData\ComposerSetup\bin;C:\Program Files\MySQL\MySQL Server 8.0\bin;C:\Program Files\PostgreSQL\14\bin;C:\Program Files (x86)\Microsoft SQL Server\170\Tools\Binn\;C:\Program Files\Microsoft SQL Server\170\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\180\Tools\Binn\;C:\Program Files\Microsoft SQL Server\170\DTS\Binn\;C:\Program Files\Amazon\AWSCLIV2\;C:\Temp\lightsailctl;C:\sqlcl\bin;C:\Program Files\PowerShell\7\;C:\Program Files\Calibre2\;C:\Program Files\WSL\;C:\minikube
+PS C:\>
+//**++++++
+
+What's the difference between 'PS C:\> $env:PATH' and '[Environment]::GetEnvironmentVariable('Path', [EnvironmentVariableTarget]::Machine)' ?

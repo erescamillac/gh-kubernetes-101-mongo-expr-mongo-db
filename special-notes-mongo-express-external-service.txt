@@ -1,0 +1,148 @@
+##--Special Notes on <mongo-express-service> (EXTERNAL Service)--##
+
+I've defined an EXTERNAL Service named 'mongo-express-service' 
+in order to be able to access my 'mongo-express-deployment' 
+through my Web Browser.
+
+The EXTERNAL Service's YAML Configuration is the following:
+
+apiVersion: v1 # The v1 group is used for managing services in Kubernetes
+kind: Service # The kind of resource being created (Service)
+metadata:
+  name: mongo-express-service # Name of the service
+spec: # Specification of the service
+  selector:
+    app: mongo-express # Selector to match the labels of the pods
+  type: LoadBalancer # Type of service (LoadBalancer) to expose it externally (EXTERNAL Service)
+  ports:
+    - protocol: TCP # Protocol for the service (TCP)
+      port: 8081 # Port on which the service will be exposed
+      targetPort: 8081 # Target port on the container to which the service will forward traffic
+      nodePort: 30100 # Node port for the service (used for external access to the service) (30000-32767 range)
+
+¿Can you explain the difference between port, targetPort, and nodePort?
+
+Also, ¿can you explain the following kubectl get service command output?
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get service
+NAME                    TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+kubernetes              ClusterIP      10.96.0.1       <none>        443/TCP          7d3h
+mongo-express-service   LoadBalancer   10.96.205.154   <pending>     8081:30100/TCP   34s
+mongodb-service         ClusterIP      10.110.35.151   <none>        27017/TCP        21h
+
+Finally, in order to 'externally expose' the service 'mongo-express-service',
+¿is it required to execute the command :: minikube service mongo-express-service?
+
+¿What does the command :: minikube service mongo-express-service :: do?
+
+and explain the minikube service mongo-express-service command output ::
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> minikube service mongo-express-service
+┌───────────┬───────────────────────┬─────────────┬───────────────────────────┐
+│ NAMESPACE │         NAME          │ TARGET PORT │            URL            │
+├───────────┼───────────────────────┼─────────────┼───────────────────────────┤
+│ default   │ mongo-express-service │ 8081        │ http://192.168.49.2:30100 │
+└───────────┴───────────────────────┴─────────────┴───────────────────────────┘
+* Starting tunnel for service mongo-express-service.
+┌───────────┬───────────────────────┬─────────────┬────────────────────────┐
+│ NAMESPACE │         NAME          │ TARGET PORT │          URL           │
+├───────────┼───────────────────────┼─────────────┼────────────────────────┤
+│ default   │ mongo-express-service │             │ http://127.0.0.1:57658 │
+└───────────┴───────────────────────┴─────────────┴────────────────────────┘
+* Opening service default/mongo-express-service in default browser...
+! Porque estás usando controlador Docker en windows, la terminal debe abrirse para ejecutarlo.
+
+===>>>
+
+1. Difference Between port, targetPort, and nodePort
+In Kubernetes, when you define a Service (especially of type LoadBalancer or NodePort), 
+these three port fields govern how external and internal traffic flows into your pods:
+
+* port (Service Port):
+
+What it is: The virtual port on which the Service itself listens inside the cluster.
+
+Purpose: Other pods within the cluster use this port to communicate with your service (e.g., http://mongo-express-service:8081).
+
+* targetPort (Container Port):
+
+What it is: The port on which the actual application container is running and listening inside the Pod.
+
+Purpose: Once the Service receives traffic on its port, 
+it forwards that traffic to this specific targetPort on the matching pod. 
+In your YAML configuration, both are 8081.
+
+* nodePort (Node Port):
+
+What it is: A static port allocated 
+in the background on every node's IP address (Worker Node) within the specified range (30000-32767).
+
+Purpose: It allows external traffic from outside the Kubernetes cluster 
+to access the service by hitting <Node-IP>:<nodePort>. Your configuration allocates port 30100.
+
+2. Explanation of kubectl get service Output
+
+NAME                     TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+kubernetes               ClusterIP      10.96.0.1       <none>        443/TCP          7d3h
+mongo-express-service    LoadBalancer   10.96.205.154   <pending>     8081:30100/TCP   34s
+mongodb-service          ClusterIP      10.110.35.151   <none>        27017/TCP        21h
+
+* kubernetes: The default internal service for the Kubernetes API server. 
+It runs as a ClusterIP on internal IP 10.96.0.1 and listens securely on port 443/TCP.
+
+* mongo-express-service: Your newly created LoadBalancer service.
+
+CLUSTER-IP (10.96.205.154): The internal virtual IP assigned inside the cluster.
+
+EXTERNAL-IP (<pending>): Shows <pending> because Minikube runs locally 
+on your machine rather than a cloud provider (like AWS, GCP, or Azure), 
+which means it cannot automatically provision a real external cloud load balancer.
+
+PORT(S) (8081:30100/TCP): Displays the mapping where 8081 is the Service port and 30100 is the nodePort.
+
+* mongodb-service: An internal ClusterIP service handling database traffic on internal IP 10.110.35.151 and port 27017/TCP.
+
+3. Minikube Service Command
+Is it required to execute minikube service mongo-express-service?
+Yes and no. It is not strictly required if you already know 
+how to reach the node IP directly, but it is heavily recommended and the easiest way 
+on local environments like Minikube. 
+Because Minikube runs inside a virtual machine or Docker container on Windows, 
+its LoadBalancer external IP stays <pending>. 
+Running minikube service bridges that gap so you can easily open it in your browser.
+
+What does minikube service mongo-express-service do?
+It inspects the specified service, 
+figures out how to reach it from your host machine, 
+sets up any necessary network routing or tunneling, 
+and can automatically launch your default web browser to the correct address.
+
+>> Explanation of the Command Output
+
+┌───────────┬───────────────────────┬─────────────┬───────────────────────────┐
+│ NAMESPACE │         NAME          │ TARGET PORT │            URL            │
+├───────────┼───────────────────────┼─────────────┼───────────────────────────┤
+│ default   │ mongo-express-service │ 8081        │ http://192.168.49.2:30100 │
+└───────────┴───────────────────────┴─────────────┴───────────────────────────┘
+* Starting tunnel for service mongo-express-service.
+┌───────────┬───────────────────────┬─────────────┬────────────────────────┐
+│ NAMESPACE │         NAME          │ TARGET PORT │          URL           │
+├───────────┼───────────────────────┼─────────────┼────────────────────────┤
+│ default   │ mongo-express-service │             │ http://127.0.0.1:57658 │
+└───────────┴───────────────────────┴─────────────┴────────────────────────┘
+* Opening service default/mongo-express-service in default browser...
+! Porque estás usando controlador Docker en windows, la terminal debe abrirse para ejecutarlo.
+
+1. Direct Node URL ([http://192.168.49.2:30100](http://192.168.49.2:30100)): 
+Minikube first identifies the internal node IP (192.168.49.2) 
+and combines it with your configuration's nodePort (30100).
+
+2. Tunneling ([http://127.0.0.1:57658](http://127.0.0.1:57658)): 
+Because you are running Minikube on Windows (likely using the Docker driver), 
+your host machine cannot always route directly to internal Minikube bridge IPs seamlessly. 
+Minikube automatically starts a local network tunnel (minikube tunnel) 
+mapping a localhost loopback port (127.0.0.1:57658) straight to the service.
+
+3. Browser Launch: Minikube attempts to pop open your default web browser 
+using that local proxy URL so you can log into Mongo Express right away.
+(default: 'admin' / 'pass' for the Mongo Express Image)

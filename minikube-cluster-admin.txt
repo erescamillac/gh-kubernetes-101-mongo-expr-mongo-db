@@ -1,0 +1,110 @@
+##--minikube Cluster Administration--##
+
+(1) Start your local minikube (Kubernetes) Cluster (1-Node / Single-Node Cluster).
+
+$ minikube start --vm-driver=hyperkit
+
+$ minikube start --vm-driver=virtualbox
+
+====>>> TROUBLESHOOT minikube start 
+
+PS C:\> minikube start
+* minikube v1.39.0 en Microsoft Windows 11 Home 25H2
+* Controlador hyperv seleccionado automáticamente. Otras opciones: virtualbox, ssh
+* Descargando la imagen de arranque de la VM
+    > minikube-v1.39.0-amd64.iso....:  65 B / 65 B [---------] 100.00% ? p/s 0s
+    > minikube-v1.39.0-amd64.iso:  395.49 MiB / 395.49 MiB  100.00% 1.30 MiB p/
+* Starting "minikube" primary control-plane node in "minikube" cluster
+* Descargando Kubernetes v1.37.0 ...
+    > preloaded-images-k8s-v18-v1...:  347.58 MiB / 347.58 MiB  100.00% 282.53
+* Creando hyperv VM (CPUs=2, Memory=6144MB, Disk=20000MB) ...
+! StartHost failed, but will try again: creating host: create: precreate: Hyper-V PowerShell Module is not available
+* Creando hyperv VM (CPUs=2, Memory=6144MB, Disk=20000MB) ...
+* Failed to start hyperv VM. Running "minikube delete" may fix it: creating host: create: precreate: Hyper-V PowerShell Module is not available
+! Startup with hyperv driver failed, trying with alternate driver virtualbox: Failed to start host: creating host: create: precreate: Hyper-V PowerShell Module is not available
+! Failed to delete cluster minikube, proceeding with retry anyway.
+* Starting "minikube" primary control-plane node in "minikube" cluster
+* Creando virtualbox VM (CPUs=2, Memory=6144MB, Disk=20000MB) ...
+! StartHost failed, but will try again: creating host: create: precreate: This computer doesn't have VT-X/AMD-v enabled. Enabling it in the BIOS is mandatory
+* Creando virtualbox VM (CPUs=2, Memory=6144MB, Disk=20000MB) ...
+* Failed to start virtualbox VM. Running "minikube delete" may fix it: creating host: create: precreate: This computer doesn't have VT-X/AMD-v enabled. Enabling it in the BIOS is mandatory
+
+X Saliendo por un error PR_HYPERV_MODULE_NOT_INSTALLED: Failed to start host: creating host: create: precreate: Hyper-V PowerShell Module is not available
+* Suggestion: Run: 'Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-Tools-All -All'
+* Documentación: https://www.altaro.com/hyper-v/install-hyper-v-powershell-module/
+* Related issue: https://github.com/kubernetes/minikube/issues/9040
+
+PS C:\>
+
+
+=====>>> I'm trying to start a minikube cluster in my laptop (a Dell Inspiron 15 / ST: HX7LVH3 / EX: 39013461399)
+but I'm getting the following ERROR:
+
+PS C:\> minikube start
+* minikube v1.39.0 en Microsoft Windows 11 Home 25H2
+* Controlador hyperv seleccionado automáticamente. Otras opciones: virtualbox, ssh
+* Descargando la imagen de arranque de la VM
+    > minikube-v1.39.0-amd64.iso....:  65 B / 65 B [---------] 100.00% ? p/s 0s
+    > minikube-v1.39.0-amd64.iso:  395.49 MiB / 395.49 MiB  100.00% 1.30 MiB p/
+* Starting "minikube" primary control-plane node in "minikube" cluster
+* Descargando Kubernetes v1.37.0 ...
+    > preloaded-images-k8s-v18-v1...:  347.58 MiB / 347.58 MiB  100.00% 282.53
+* Creando hyperv VM (CPUs=2, Memory=6144MB, Disk=20000MB) ...
+! StartHost failed, but will try again: creating host: create: precreate: Hyper-V PowerShell Module is not available
+* Creando hyperv VM (CPUs=2, Memory=6144MB, Disk=20000MB) ...
+* Failed to start hyperv VM. Running "minikube delete" may fix it: creating host: create: precreate: Hyper-V PowerShell Module is not available
+! Startup with hyperv driver failed, trying with alternate driver virtualbox: Failed to start host: creating host: create: precreate: Hyper-V PowerShell Module is not available
+! Failed to delete cluster minikube, proceeding with retry anyway.
+* Starting "minikube" primary control-plane node in "minikube" cluster
+* Creando virtualbox VM (CPUs=2, Memory=6144MB, Disk=20000MB) ...
+! StartHost failed, but will try again: creating host: create: precreate: This computer doesn't have VT-X/AMD-v enabled. Enabling it in the BIOS is mandatory
+* Creando virtualbox VM (CPUs=2, Memory=6144MB, Disk=20000MB) ...
+* Failed to start virtualbox VM. Running "minikube delete" may fix it: creating host: create: precreate: This computer doesn't have VT-X/AMD-v enabled. Enabling it in the BIOS is mandatory
+
+X Saliendo por un error PR_HYPERV_MODULE_NOT_INSTALLED: Failed to start host: creating host: create: precreate: Hyper-V PowerShell Module is not available
+* Suggestion: Run: 'Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-Tools-All -All'
+* Documentación: https://www.altaro.com/hyper-v/install-hyper-v-powershell-module/
+* Related issue: https://github.com/kubernetes/minikube/issues/9040
+
+
+¿Why is this happening? and ¿how can I solve it? 
+
+
+====>> 
+
+I've checked the Task Manager and the CPU Virtualization is ENABLED.
+
+//**-- --**//
+PS C:\> minikube delete --all --purge
+* Removed all traces of the "minikube" cluster.
+* Successfully deleted all profiles
+* Successfully purged minikube directory located at - [C:\Users\erick\.minikube]
+//**++ ++**//
+
+====>> minikube start 
+
+
+PS C:\> minikube delete --all --purge
+* Removed all traces of the "minikube" cluster.
+* Successfully deleted all profiles
+* Successfully purged minikube directory located at - [C:\Users\erick\.minikube]
+PS C:\> minikube start --driver=docker
+* minikube v1.39.0 en Microsoft Windows 11 Home 25H2
+* Using the docker driver based on user configuration
+* Using Docker Desktop driver with root privileges
+* Starting "minikube" primary control-plane node in "minikube" cluster
+* Pulling base image v0.0.51 ...
+* Descargando Kubernetes v1.37.0 ...
+    > gcr.io/k8s-minikube/kicbase:  507.61 MiB / 507.61 MiB  100.00% 3.10 MiB p
+    > preloaded-images-k8s-v18-v1...:  347.58 MiB / 347.58 MiB  100.00% 1.01 Mi
+* Creating docker container (CPUs=2, Memory=8100MB) ...
+* Preparando Kubernetes v1.37.0 en containerd 2.3.4...
+* Configurando CNI CNI ...
+* Verifying Kubernetes components...
+  - Using image gcr.io/k8s-minikube/storage-provisioner:v5
+* Complementos habilitados: storage-provisioner, default-storageclass
+* Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
+PS C:\>
+
+//**----------------------------------------------
+

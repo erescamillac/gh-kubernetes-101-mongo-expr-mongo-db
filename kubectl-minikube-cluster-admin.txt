@@ -1,0 +1,952 @@
+##--kubectl: minikube-cluster admin--##
+
+PS C:\> kubectl get nodes
+NAME       STATUS   ROLES           AGE    VERSION
+minikube   Ready    control-plane   3h6m   v1.37.0
+
+What does the following command do :: kubectl get nodes?
+and explain the command output ::
+
+NAME       STATUS   ROLES           AGE    VERSION
+minikube   Ready    control-plane   3h6m   v1.37.0
+
+//**--- ---**//
+What does kubectl get nodes do?
+The command kubectl get nodes is a Kubernetes command-line instruction used to query the Kubernetes API server 
+and list all the worker and control-plane nodes registered in your cluster, along with their current status and basic details.
+//**+++ +++**//
+
+Explaining the Command Output
+The provided output displays information for a single-node local cluster running via Minikube:
+
+NAME (minikube): The hostname or identifier of the node. 
+In this case, it's the default minikube node, which acts as a standalone local cluster.
+
+STATUS (Ready): Indicates the operational health of the node. 
+A status of Ready means the node is healthy, 
+communicating properly with the cluster, and ready to accept and run pods.
+
+ROLES (control-plane): Specifies the function of the node within the cluster. 
+control-plane means this node hosts 
+the core Kubernetes master components 
+(such as the API server, scheduler, and controller manager) that manage the cluster.
+
+'control-plane' ::=== 'Master node'
+
+AGE (3h6m): Shows how long the node has been up and running since it was initialized (3 hours and 6 minutes).
+
+VERSION (v1.37.0): The exact version of Kubernetes running on that specific node
+
+====>>
+
+Creating a DEPLOYMENT ::
+
+PS C:\> kubectl create deployment nginx-deployment --image=nginx
+deployment.apps/nginx-deployment created
+
+$ kubectl create deployment <deployment-NAME> --image=${image-name:tag}
+
+El comando anterior crea un DEPLOYMENT de nombre 'nginx-deployment'
+y especifica la Imagen de Docker que se utilizará como 
+base para creación de los <Pods>. En este caso el comando
+utilizará y descargará la imagen ${nginx:latest} de DockerHub.
+
+
+What does kubectl create deployment nginx-deployment --image=nginx do?
+This command instructs your Kubernetes cluster 
+to create a new Deployment resource named nginx-deployment using the official Nginx web server image.
+
+Breakdown of the Command Parts:
+kubectl: The command-line tool used to communicate with and manage Kubernetes clusters.
+
+create deployment nginx-deployment: Tells Kubernetes 
+to generate a Deployment object. 
+A Deployment manages a replica set of pods behind the scenes, 
+ensuring that the application stays running, handles updates smoothly, and can scale up or down.
+
+--image=nginx: Specifies the container image to download and run inside the deployment's pods. 
+By default, it pulls the standard nginx image from Docker Hub.
+
+Once you run this command, Kubernetes will pull the Nginx container image 
+and start running it inside a Pod managed by your new deployment. 
+You can check its status afterward by running kubectl get deployments or kubectl get pods.
+
+=====>>> 
+
+When creating a deployment is it possible to indicate the initial number of Pods replicas ?
+
+Yes, it is completely possible to specify the initial number of Pod replicas when creating a deployment. 
+You can do this either imperatively via the command line or declaratively using a configuration file.
+
+Method 1: Using the Command Line Flag (--replicas)
+You can pass the --replicas (or short flag -r) directly when running the kubectl create deployment command:
+
+$ kubectl create deployment nginx-deployment --image=nginx --replicas=3
+
+What it does: This creates the nginx-deployment with 3 running instances (pods) 
+of the Nginx container right from the start. 
+If you omit this flag, Kubernetes defaults to creating 1 replica.
+
+Method 2: Defining it in a YAML Manifest File
+If you prefer a declarative approach using a YAML configuration file, you can set the replica count inside the spec section:
+
+YAML::
+//**-- --**//
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3   # <-- Specify your initial number of Pod replicas here
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+//**++ ++**//
+
+You can then apply this configuration using:
+
+$ kubectl apply -f deployment.yaml
+
+=====>>> 
+
+PS C:\> kubectl create deployment nginx-deployment --image=nginx
+deployment.apps/nginx-deployment created
+PS C:\> kubectl get deployments
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   1/1     1            1           50m
+PS C:\> kubectl get pods
+NAME                                READY   STATUS    RESTARTS   AGE
+nginx-deployment-5467ddfc68-gw8k7   1/1     Running   0          50m
+PS C:\>
+
+=====>>>
+
+PS C:\> kubectl create deployment mongo-deployment --image=mongo
+deployment.apps/mongo-deployment created
+PS C:\> kubectl get deployments
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+mongo-deployment   0/1     1            0           12s
+nginx-deployment   1/1     1            1           64m
+PS C:\> kubectl get pods
+NAME                                READY   STATUS              RESTARTS   AGE
+mongo-deployment-5bcb964b5b-dr6vh   0/1     ContainerCreating   0          22s
+nginx-deployment-5467ddfc68-gw8k7   1/1     Running             0          65m
+PS C:\> kubectl logs mongo-deployment-5bcb964b5b-dr6vh
+{"t":{"$date":"2026-10-12T05:18:41.208+00:00"},"s":"I",  "c":"-",        "id":8991200, "ctx":"main","msg":"Shuffling initializers","attr":{"seed":134842197}}
+{"t":{"$date":"2026-10-12T05:18:41.223+00:00"},"s":"I",  "c":"CONTROL",  "id":97374,   "ctx":"main","msg":"Automatically disabling TLS 1.0 and TLS 1.1, to force-enable TLS 1.1 specify --sslDisabledProtocols 'TLS1_0'; to force-enable TLS 1.0 specify --sslDisabledProtocols 'none'"}
+{"t":{"$date":"2026-10-12T05:18:41.224+00:00"},"s":"I",  "c":"CONTROL",  "id":10500903,"ctx":"main","msg":"Not initializing OpenTelemetry metrics"}
+{"t":{"$date":"2026-10-12T05:18:41.228+00:00"},"s":"I",  "c":"EXECUTOR", "id":11280000,"ctx":"main","msg":"Starting thread pool","attr":{"poolName":"AuthorizationRouter","numThreads":0,"minThreads":0,"maxThreads":1000000000}}
+{"t":{"$date":"2026-10-12T05:18:41.228+00:00"},"s":"I",  "c":"EXECUTOR", "id":11280000,"ctx":"main","msg":"Starting thread pool","attr":{"poolName":"ThreadPool1","numThreads":0,"minThreads":0,"maxThreads":1}}
+{"t":{"$date":"2026-10-12T05:18:41.230+00:00"},"s":"I",  "c":"NETWORK",  "id":4915701, "ctx":"main","msg":"Initialized wire specification","attr":{"spec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":29},"incomingInternalClient":{"minWireVersion":0,"maxWireVersion":29},"outgoing":{"minWireVersion":6,"maxWireVersion":29},"isInternalClient":true}}}
+{"t":{"$date":"2026-10-12T05:18:41.230+00:00"},"s":"I",  "c":"CONTROL",  "id":9859700, "ctx":"main","msg":"Not initializing OpenTelemetry"}
+{"t":{"$date":"2026-10-12T05:18:41.230+00:00"},"s":"I",  "c":"EXECUTOR", "id":11280000,"ctx":"main","msg":"Starting thread pool","attr":{"poolName":"ReplWriterWorkerThreadPool","numThreads":0,"minThreads":0,"maxThreads":16}}
+{"t":{"$date":"2026-10-12T05:18:41.230+00:00"},"s":"I",  "c":"CONTROL",  "id":5945603, "ctx":"main","msg":"Multi threading initialized"}
+{"t":{"$date":"2026-10-12T05:18:41.231+00:00"},"s":"I",  "c":"EXECUTOR", "id":11280000,"ctx":"main","msg":"Starting thread pool","attr":{"poolName":"ReadWriteConcernDefaults","numThreads":0,"minThreads":0,"maxThreads":1}}
+{"t":{"$date":"2026-10-12T05:18:41.231+00:00"},"s":"I",  "c":"CONTROL",  "id":4615611, "ctx":"initandlisten","msg":"MongoDB starting","attr":{"pid":1,"port":27017,"dbPath":"/data/db","architecture":"64-bit","host":"mongo-deployment-5bcb964b5b-dr6vh"}}
+{"t":{"$date":"2026-10-12T05:18:41.243+00:00"},"s":"I",  "c":"CONTROL",  "id":23403,   "ctx":"initandlisten","msg":"Build Info","attr":{"buildInfo":{"version":"9.0.2","gitVersion":"c4d309807b94ac30edcca32e35e88a9598eadfc8","openSSLVersion":"OpenSSL 3.0.13 30 Jan 2024","modules":[],"allocator":"tcmalloc-google","javascriptEngine":"mozjs-wasm","environment":{"distmod":"ubuntu2404","distarch":"x86_64","target_arch":"x86_64"}}}}
+
+=====>> kubectl describe pod <pod-name>
+
+PS C:\> kubectl get pods
+NAME                                READY   STATUS    RESTARTS   AGE
+mongo-deployment-5bcb964b5b-dr6vh   1/1     Running   0          22h
+nginx-deployment-5467ddfc68-gw8k7   1/1     Running   0          23h
+PS C:\> kubectl describe pod mongo-deployment-5bcb964b5b-dr6vh
+Name:             mongo-deployment-5bcb964b5b-dr6vh
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             minikube/192.168.49.2
+Start Time:       Sun, 11 Oct 2026 23:17:10 -0600
+Labels:           app=mongo-deployment
+                  pod-template-hash=5bcb964b5b
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.4
+IPs:
+  IP:           10.244.0.4
+Controlled By:  ReplicaSet/mongo-deployment-5bcb964b5b
+Containers:
+  mongo:
+    Container ID:   containerd://a6ce1e091d2df9e5b91c09445acf0b3814ef7af8a3b83eea4f5e37e0446d80f3
+    Image:          mongo
+    Image ID:       docker.io/library/mongo@sha256:bac22ea7710d774103dcad3ec8ac13cba1eb378f488e3ce8a6b3a1adf2ba9dcc
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Sun, 11 Oct 2026 23:18:41 -0600
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-hgsqp (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True
+  Initialized                 True
+  Ready                       True
+  ContainersReady             True
+  PodScheduled                True
+Volumes:
+  kube-api-access-hgsqp:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  22h   default-scheduler  Successfully assigned default/mongo-deployment-5bcb964b5b-dr6vh to minikube
+  Normal  Pulling    22h   kubelet            spec.containers{mongo}: Pulling image "mongo"
+  Normal  Pulled     22h   kubelet            spec.containers{mongo}: Successfully pulled image "mongo" in 1m33.965s (1m33.965s including waiting). Image size: 371917762 bytes.
+  Normal  Created    22h   kubelet            spec.containers{mongo}: Container created
+  Normal  Started    22h   kubelet            spec.containers{mongo}: Container started
+PS C:\> 
+
+====>> kubectl EXEC :: Open an INTERACTIVE TERMINAL inside the <Pod> ::
+
+$ kubectl exec -it <pod-name> -- bin/bash
+
+-it :: interactive Terminal 
+
+//**-- --**//
+PS C:\> kubectl get pods
+NAME                                READY   STATUS    RESTARTS   AGE
+mongo-deployment-5bcb964b5b-dr6vh   1/1     Running   0          22h
+nginx-deployment-5467ddfc68-gw8k7   1/1     Running   0          23h
+PS C:\> kubectl exec -it mongo-deployment-5bcb964b5b-dr6vh -- bin/bash
+root@mongo-deployment-5bcb964b5b-dr6vh:/# pwd
+/
+root@mongo-deployment-5bcb964b5b-dr6vh:/# whoami
+root
+root@mongo-deployment-5bcb964b5b-dr6vh:/#
+//**++ ++**//
+
+What does the following kubectl command do ::  PS C:\> kubectl exec -it mongo-deployment-5bcb964b5b-dr6vh -- bin/bash  ?
+
+What does the command do?
+This command opens an interactive terminal session (shell) 
+inside a running container belonging to a specific Kubernetes pod.
+
+Breakdown of the Command Parts:
+kubectl exec: Runs a command inside a container of an existing Pod.
+
+-it: A combination of two flags that provide an interactive experience:
+
+-i (stdin): Keeps STDIN open so you can interact with the container.
+
+-t (tty): Allocates a pseudo-TTY, giving you a proper terminal prompt.
+
+mongo-deployment-5bcb964b5b-dr6vh: The exact name of the target Pod 
+(in this case, a MongoDB pod managed by a deployment).
+
+--: A separator delimiter used to signal the end of kubectl flags 
+and the beginning of the command you want to run inside the container.
+
+bin/bash: The command/shell executed inside the container. 
+This drops you directly into a Bash command-line interface 
+inside the container's filesystem, allowing you 
+to run troubleshooting commands, inspect logs, or interact with MongoDB directly.
+
+====>> Kubernetes Configuration files (YAML). ($ kubectl apply -f deployment.yaml)
+
+PS C:\> minikube start --driver=docker
+
+$ kubectl apply -f <config-file-name.yaml>
+
+
+//**-- --**//
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> ls -Force
+
+    Directorio: C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---       09/10/2026 11:29 p. m.          10404 kubectl-installation-instructions.txt
+-a---       13/10/2026 09:46 p. m.          13250 kubectl-minikube-cluster-admin.txt
+-a---       11/10/2026 09:34 p. m.           6357 minikube-cluster-admin.txt
+-a---       09/10/2026 09:36 p. m.           4819 minikube-installation-instructions.txt
+-a---       13/10/2026 10:13 p. m.            565 nginx-deployment.yaml
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get deployments
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+mongo-deployment   1/1     1            1           46h
+nginx-deployment   1/1     1            1           2d
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl apply -f .\nginx-deployment.yaml
+Warning: resource deployments/nginx-deployment is missing the kubectl.kubernetes.io/last-applied-configuration annotation 
+which is required by kubectl apply. 
+kubectl apply should only be used on resources created declaratively by either 
+kubectl create --save-config or kubectl apply. 
+The missing annotation will be patched automatically.
+The Deployment "nginx-deployment" is invalid: spec.selector: Invalid value: {"matchLabels":{"app":"nginx"}}: field is immutable
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube>
+//**++ ++**// 
+
+2026-4Q-AI-DataCenters-Rotation
+
+//**-----
+Creating a DEPLOYMENT ::
+
+PS C:\> kubectl create deployment nginx-deployment --image=nginx
+deployment.apps/nginx-deployment created
+
+$ kubectl create deployment <deployment-NAME> --image=${image-name:tag}
+
+//**+++++++
+
+I'm working with Kubernetes, through kubectl I created a DEPLOYMENT named 'nginx-deployment', 
+the command that I run was the following:
+
+PS C:\> kubectl create deployment nginx-deployment --image=nginx
+
+When I list the Deployments in my Kubernetes Cluster the output looks like this:
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get deployments
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+mongo-deployment   1/1     1            1           5d20h
+nginx-deployment   1/1     1            1           5d21h
+
+Now I created a file named 'nginx-deployment.yaml' and its content is the following:
+
+# Sample Nginx Deployment configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec: # Specification of the deployment
+  replicas: 2 # Number of desired pods ('inside' the deployment)
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec: # Specification of the <pod> template
+      containers:
+      - name: nginx-container
+        image: nginx:1.16
+        ports:
+        - containerPort: 80 # Bind the container port to the host port
+		
+When I tried to apply the specified Configuration in the 'nginx-deployment.yaml'
+using the kubectl apply command I got the following ERROR:
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl apply -f .\nginx-deployment.yaml
+Warning: resource deployments/nginx-deployment is missing the kubectl.kubernetes.io/last-applied-configuration annotation 
+which is required by kubectl apply. 
+kubectl apply should only be used on resources created declaratively by either 
+kubectl create --save-config or kubectl apply. 
+The missing annotation will be patched automatically.
+The Deployment "nginx-deployment" is invalid: spec.selector: Invalid value: {"matchLabels":{"app":"nginx"}}: field is immutable
+
+¿Why is this happening? and ¿How can I solve it?
+
+##-- --##
+Why is this happening?
+You are running into two related issues caused by a conflict between 
+how the deployment was originally created and what your YAML file specifies:
+
+Missing Last-Applied Annotation:
+Because you originally created the deployment imperatively using kubectl create deployment, 
+Kubernetes did not attach the kubectl.kubernetes.io/last-applied-configuration annotation that kubectl apply relies on 
+to track declarative state. 
+While kubectl apply attempts to automatically patch this missing annotation, 
+it leads straight into the second, blocking error.
+
+The spec.selector Field is Immutable:
+When you ran kubectl create deployment nginx-deployment --image=nginx, 
+Kubernetes automatically generated a default selector for it 
+(typically matching app: nginx-deployment). 
+However, in your nginx-deployment.yaml file, 
+you defined a different selector (app: nginx). 
+In Kubernetes, a Deployment's spec.selector is strictly immutable—once created, 
+you cannot modify its selector. 
+When kubectl apply tried to update the existing resource with your new selector, 
+the Kubernetes API server rejected the request.
+
+How can I solve it?
+Since this is a learning/development environment, 
+the cleanest and most standard way to transition from an imperative resource 
+to a declarative YAML configuration is to delete the old deployment and recreate it using your manifest file.
+
+Step 1: Delete the existing imperative deployment
+Run the following command to remove the old conflicting deployment:
+
+$ kubectl delete deployment nginx-deployment
+
+Step 2: Apply your declarative YAML configuration
+Now, apply your nginx-deployment.yaml file to create it fresh with your custom specifications (replicas, image version, and labels):
+
+$ kubectl apply -f .\nginx-deployment.yaml
+
+Step 3: Verify the deployment
+Check that your deployment is running successfully with the desired configuration:
+
+$ kubectl get deployments
+$ kubectl get pods
+
+======>> kubectl apply Command Explanation:
+
+¿What does the 'kubectl apply -f .\nginx-deployment.yaml' command do?
+
+The command kubectl apply -f .\nginx-deployment.yaml 
+tells Kubernetes to create or update resources based on the configuration defined in your YAML manifest file.
+
+Here is a breakdown of what each part does:
+
+kubectl apply: This is the core declarative command in Kubernetes. 
+It tells the cluster to ensure that the actual state of your cluster 
+matches the desired state described in your configuration file. 
+If the resource doesn't exist yet, it creates it; if it already exists, it updates it.
+
+-f: Stands for file (or filename). 
+It tells kubectl that you are providing a configuration file 
+rather than passing arguments directly through the command line.
+
+.\nginx-deployment.yaml: The relative file path to your specific YAML manifest file 
+containing the specifications for your Nginx deployment (such as container image, desired replica count, and labels).
+
+=====>> nginx-deployment YAML manifest file configuration Explanation.
+
+Explain the configuration especified in my YAML manifest file:
+
+# Sample Nginx Deployment configuration (manifest file for Kubernetes)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec: # Specification of the deployment
+  replicas: 2 # Number of desired pods ('inside' the deployment)
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec: # Specification of the <pod> template
+      containers:
+      - name: nginx-container
+        image: nginx:1.16
+        ports:
+        - containerPort: 80 # Bind the container port to the host port
+		
+-->>
+
+Here is a detailed, section-by-section breakdown of your Nginx Deployment YAML manifest file:
+
+1. API Version and Kind
+
+apiVersion: apps/v1
+kind: Deployment
+
+apiVersion: apps/v1: Specifies the Kubernetes API version and group used to create the resource. 
+The apps/v1 group is the current stable version for managing workloads like Deployments, ReplicaSets, and StateFulSets.
+
+kind: Deployment: 
+Defines the type of Kubernetes object you want to create. 
+A Deployment manages a set of identical Pods behind the scenes, ensuring they stay running, handle rolling updates smoothly, and scale as needed.
+
+2. Metadata Section
+
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+	
+metadata: Contains unique identifiers and descriptive data for the Deployment itself.
+
+name: nginx-deployment: Assigns the literal name nginx-deployment to this deployment resource inside your cluster.
+
+labels: Key-value pairs (app: nginx) used to organize, group, and query Kubernetes resources.
+
+3. Deployment Specification (spec)
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+	  
+spec: Describes the desired state of the Deployment.
+
+replicas: 2: Instructs Kubernetes to maintain 2 identical Pod replicas running simultaneously to provide redundancy and load balancing.
+
+selector: Tells the Deployment which Pods it is responsible for managing.
+
+matchLabels: app: nginx: Directs the Deployment to track and control any Pods in the cluster 
+that carry the matching label app: nginx.
+
+
+4. Pod Template (template)
+
+template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx:1.16
+        ports:
+        - containerPort: 80
+		
+template: Acts as the blueprint or recipe that the Deployment uses 
+whenever it needs to create new Pods.
+
+metadata.labels: app: nginx: Applies the label app: nginx 
+to every Pod generated from this template. This is crucial because it ensures the Pods match the Deployment's selector rules defined above.
+
+spec: Defines the actual runtime environment inside the Pod.
+
+containers: A list of containers running 
+within the Pod. In this case, there is a single container.
+
+name: nginx-container: Gives the specific container a unique name (nginx-container) within the Pod.
+
+image: nginx:1.16: Specifies the exact Docker container image and version tag (nginx version 1.16) 
+to pull from the registry and run.
+
+ports: Specifies the network ports exposed by the container.
+
+containerPort: 80: Opens port 80 inside the container so that internal services 
+or network rules can route HTTP web traffic directly to the Nginx server.
+
+=====>>> 
+
+====>>> Example: Simple Mongo Express - Mongo DB Web application DEPLOYMENT ::
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get all
+NAME                                    READY   STATUS    RESTARTS     AGE
+pod/mongo-deployment-5bcb964b5b-dr6vh   1/1     Running   1 (4d ago)   5d22h
+pod/nginx-deployment-6f4fc67755-dhwzn   1/1     Running   0            90m
+pod/nginx-deployment-6f4fc67755-pmqfr   1/1     Running   0            90m
+
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   6d3h
+
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/mongo-deployment   1/1     1            1           5d22h
+deployment.apps/nginx-deployment   2/2     2            2           90m
+
+NAME                                          DESIRED   CURRENT   READY   AGE
+replicaset.apps/mongo-deployment-5bcb964b5b   1         1         1       5d22h
+replicaset.apps/nginx-deployment-6f4fc67755   2         2         2       90m
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl delete deployment nginx-deployment
+deployment.apps "nginx-deployment" deleted from default namespace
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl delete deployment mongo-deployment
+deployment.apps "mongo-deployment" deleted from default namespace
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get all
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   6d3h
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube>
+
+//**-- --**//
+
+$ echo -n 'KrizUsername' | base64
+
+I'm trying to mimic the following MacOS Terminal command :: $ echo -n 'KrizUsername' | base64  
+¿Which is the equivalent MS PowerShell command (Windows 11 / MS PowerShell 7)?
+
+[Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes('KrizUsername'))
+
+[Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes('KrizUsername'))
+
+[Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes('KrizUsername'))
+
+//**--- ---**//
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> ls -Force
+
+    Directorio: C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---       09/10/2026 11:29 p. m.          10404 kubectl-installation-instructions.txt
+-a---       17/10/2026 10:36 p. m.          26319 kubectl-minikube-cluster-admin.txt
+-a---       11/10/2026 09:34 p. m.           6357 minikube-cluster-admin.txt
+-a---       09/10/2026 09:36 p. m.           4819 minikube-installation-instructions.txt
+-a---       17/10/2026 10:25 p. m.           1463 mongo-db-deployment.yaml
+-a---       17/10/2026 10:42 p. m.            689 mongo-db-secret.yaml
+-a---       17/10/2026 09:03 p. m.            679 nginx-deployment.yaml
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl apply -f .\mongo-db-secret.yaml
+secret/mongodb-secret created
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get all
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   6d4h
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get secret
+NAME             TYPE     DATA   AGE
+mongodb-secret   Opaque   2      72s
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube>
+//**+++ +++**//
+
+//**-------- ------**//
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> ls -Force
+
+    Directorio: C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---       09/10/2026 11:29 p. m.          10404 kubectl-installation-instructions.txt
+-a---       17/10/2026 10:48 p. m.          28004 kubectl-minikube-cluster-admin.txt
+-a---       11/10/2026 09:34 p. m.           6357 minikube-cluster-admin.txt
+-a---       09/10/2026 09:36 p. m.           4819 minikube-installation-instructions.txt
+-a---       17/10/2026 10:55 p. m.           1917 mongo-db-deployment.yaml
+-a---       17/10/2026 10:42 p. m.            689 mongo-db-secret.yaml
+-a---       17/10/2026 09:03 p. m.            679 nginx-deployment.yaml
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get secret
+NAME             TYPE     DATA   AGE
+mongodb-secret   Opaque   2      9m32s
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl apply -f .\mongo-db-deployment.yaml
+deployment.apps/mongodb-deployment created
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get all
+NAME                                      READY   STATUS              RESTARTS   AGE
+pod/mongodb-deployment-798c4b455c-nt9km   0/1     ContainerCreating   0          11s
+
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   6d4h
+
+NAME                                 READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/mongodb-deployment   0/1     1            0           11s
+
+NAME                                            DESIRED   CURRENT   READY   AGE
+replicaset.apps/mongodb-deployment-798c4b455c   1         1         0       11s
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube>
+//**++++++++ ++++++**//
+
+Explain the following kubectl command output ::
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get all
+NAME                                      READY   STATUS              RESTARTS   AGE
+pod/mongodb-deployment-798c4b455c-nt9km   0/1     ContainerCreating   0          11s
+
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   6d4h
+
+NAME                                 READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/mongodb-deployment   0/1     1            0           11s
+
+NAME                                            DESIRED   CURRENT   READY   AGE
+replicaset.apps/mongodb-deployment-798c4b455c   1         1         0       11s
+
+====>>> 4. ReplicaSets Section
+
+NAME                                             DESIRED   CURRENT   READY   AGE
+replicaset.apps/mongodb-deployment-798c4b455c    1         1         0       11s
+
+replicaset.apps/mongodb-deployment-798c4b455c: The underlying ReplicaSet managed automatically by your Deployment. 
+Its job is to guarantee that the specified number of pod replicas are running at all times.
+
+DESIRED (1): You want exactly 1 replica of this pod to run.
+
+CURRENT (1): There is currently 1 replica instantiated.
+
+READY (0): 0 replicas are fully up and running yet.
+
+AGE (11s): Created 11 seconds ago alongside the deployment.
+
+====>>>
+
+¿If I were interested in running 2 Replicas for the mongo-db-deployment, considering that the mongodb stores data, should I keep using a Deployment or 
+a StatefulSet? and ¿Which changes in my configuration should I apply in order to run 2 mongo-db replicas?
+
+
+
+
+
+======>>> 
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl apply -f .\mongo-db-deployment.yaml
+deployment.apps/mongodb-deployment unchanged
+service/mongodb-service created
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get all
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/mongodb-deployment-798c4b455c-nt9km   1/1     Running   0          65m
+
+NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+service/kubernetes        ClusterIP   10.96.0.1       <none>        443/TCP     6d5h
+service/mongodb-service   ClusterIP   10.110.35.151   <none>        27017/TCP   22s
+
+NAME                                 READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/mongodb-deployment   1/1     1            1           65m
+
+NAME                                            DESIRED   CURRENT   READY   AGE
+replicaset.apps/mongodb-deployment-798c4b455c   1         1         1       65m
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube>
+
+=====>>> 
+In Kubernetes, what does it mean that a service is of type 'ClusterIP' ?
+
+In Kubernetes, a service of type ClusterIP (which is also the default service type) means that the service is exposed on a cluster-internal IP address.
+
+Here is what that means in practice:
+
+1. Internal-Only Access
+A ClusterIP service is only reachable from within the cluster. 
+It is completely hidden from the outside world and cannot be accessed directly from the public internet 
+or your local machine's browser (unless you use tools like kubectl port-forward).
+
+2. Cluster-Internal IP Address
+When you create a ClusterIP service, Kubernetes assigns it a dedicated virtual IP address (the CLUSTER-IP) 
+from the cluster's internal network pool. Other pods and services 
+within the same cluster can use this IP (or the service's internal DNS name) to talk to the backend pods securely and reliably.
+
+3. Load Balancing
+Even if your service backs multiple identical Pods (replicas), 
+the ClusterIP acts as a stable single entry point. It automatically load-balances incoming traffic across all healthy pods matching its selector.
+
+Summary Comparison
+ClusterIP (Default): Internal communication only 
+(Pod-to-Pod or Service-to-Service within the cluster).
+
+NodePort: Exposes the service on a static port on each node's IP, making it reachable from outside the cluster via <NodeIP>:<NodePort>.
+
+LoadBalancer: Provisions an external load balancer from your cloud provider (like AWS, GCP, or Azure) to route external traffic directly into the cluster.
+
+=====>>> kubectl describe service <service-name>
+
+Explain the following kubectl describe service command's output:
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl describe service mongodb-service
+Name:                     mongodb-service
+Namespace:                default
+Labels:                   <none>
+Annotations:              <none>
+Selector:                 app=mongodb
+Type:                     ClusterIP
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.110.35.151
+IPs:                      10.110.35.151
+Port:                     <unset>  27017/TCP
+TargetPort:               27017/TCP
+Endpoints:                10.244.0.7:27017
+Session Affinity:         None
+Internal Traffic Policy:  Cluster
+Events:                   <none>
+
+//**-- --**//
+Here is a detailed, section-by-section breakdown of your kubectl describe service mongodb-service command output:
+
+1. General Metadata
+
+Name:                     mongodb-service
+Namespace:                default
+Labels:                   <none>
+Annotations:              <none>
+
+Name (mongodb-service): The name of the Kubernetes Service resource you are describing.
+
+Namespace (default): The virtual cluster partition or namespace where this service lives. 
+By default, resources go into the default namespace unless specified otherwise.
+
+Labels & Annotations (<none>): Key-value metadata tags. No custom labels or annotations have been added to this service object.
+
+
+2. Routing & Type Configuration
+
+Selector:                 app=mongodb
+Type:                     ClusterIP
+
+Selector (app=mongodb): This is the most crucial matching rule for the service. 
+It tells Kubernetes: "Find any Pod in the cluster that has the label app=mongodb and automatically route incoming traffic to them."
+
+Type (ClusterIP): Specifies that this service is exposed on a cluster-internal IP address. 
+It is only accessible from inside the Kubernetes cluster, keeping your database hidden and secure from the outside world.
+
+3. Networking & IP Details
+
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.110.35.151
+IPs:                      10.110.35.151
+
+
+IP Family Policy & Families (SingleStack / IPv4): 
+Indicates that the service handles standard IPv4 networking rather than dual-stack (IPv4 and IPv6).
+
+IP / IPs (10.110.35.151): The internal virtual IP address assigned to this service. 
+Other pods in the cluster can send database queries to 10.110.35.151 
+(or use the DNS name mongodb-service), and Kubernetes will handle the routing.
+
+4. Ports and Endpoints
+
+Port:                     <unset>  27017/TCP
+TargetPort:               27017/TCP
+Endpoints:                10.244.0.7:27017
+
+
+Port (27017/TCP): The port exposed by the service itself. 
+Applications inside the cluster will connect to this service on port 27017.
+
+TargetPort (27017/TCP): The port on the underlying container where the service forwards incoming traffic. 
+Here, both the service port and container port are 27017.
+
+Endpoints (10.244.0.7:27017): This is where the magic happens. 
+Kubernetes has checked the app=mongodb selector and found an active Pod 
+running at internal IP 10.244.0.7 listening on port 27017. 
+This proves that your service has successfully linked up with your MongoDB pod!
+
+
+5. Traffic Policies and Events
+
+Session Affinity:         None
+Internal Traffic Policy:  Cluster
+Events:                   <none>
+
+Session Affinity (None): Means there is no sticky session configured. 
+Requests are distributed across matching pods using standard round-robin load balancing.
+
+Internal Traffic Policy (Cluster): Tells Kubernetes that traffic can be routed to endpoints across any node in the cluster.
+
+Events (<none>): Lists recent Kubernetes lifecycle events for this service. 
+<none> means everything is operating smoothly with zero errors, warnings, or restart events.
+//**++ ++**//
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl describe service mongodb-service
+Name:                     mongodb-service
+Namespace:                default
+Labels:                   <none>
+Annotations:              <none>
+Selector:                 app=mongodb
+Type:                     ClusterIP
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.110.35.151
+IPs:                      10.110.35.151
+Port:                     <unset>  27017/TCP
+TargetPort:               27017/TCP
+Endpoints:                10.244.0.7:27017
+Session Affinity:         None
+Internal Traffic Policy:  Cluster
+Events:                   <none>
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get pod -o wide
+NAME                                  READY   STATUS    RESTARTS   AGE   IP           NODE       NOMINATED NODE   READINESS GATES
+mongodb-deployment-798c4b455c-nt9km   1/1     Running   0          21h   10.244.0.7   minikube   <none>           <none>
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube>
+
+//**------- ------**//
+
+=====>> MongoBD Password ERROR:
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> ls -Force
+
+    Directorio: C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---       09/10/2026 11:29 p. m.          10404 kubectl-installation-instructions.txt
+-a---       18/10/2026 08:37 p. m.          40031 kubectl-minikube-cluster-admin.txt
+-a---       11/10/2026 09:34 p. m.           6357 minikube-cluster-admin.txt
+-a---       09/10/2026 09:36 p. m.           4819 minikube-installation-instructions.txt
+-a---       18/10/2026 09:13 p. m.            429 mongo-configmap.yaml
+-a---       18/10/2026 12:05 a. m.           2492 mongo-db-deployment.yaml
+-a---       17/10/2026 10:42 p. m.            689 mongo-db-secret.yaml
+-a---       18/10/2026 09:12 p. m.           2335 mongo-express-deployment.yaml
+-a---       17/10/2026 09:03 p. m.            679 nginx-deployment.yaml
+
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl apply -f .\mongo-configmap.yaml
+configmap/mongodb-configmap created
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get configmap
+NAME                DATA   AGE
+kube-root-ca.crt    1      7d2h
+mongodb-configmap   1      12s
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl apply -f .\mongo-express-deployment.yaml
+deployment.apps/mongo-express-deployment created
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get deployments
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+mongo-express-deployment   0/1     1            0           8s
+mongodb-deployment         1/1     1            1           22h
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl get pods
+NAME                                       READY   STATUS    RESTARTS   AGE
+mongo-express-deployment-588c6867f-c9gr2   1/1     Running   0          50s
+mongodb-deployment-798c4b455c-nt9km        1/1     Running   0          22h
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl logs mongo-express-deployment-588c6867f-c9gr2
+Waiting for mongo:27017...
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+Mon Oct 19 03:21:42 UTC 2026 retrying to connect to mongo:27017 (2/10)
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+Mon Oct 19 03:21:48 UTC 2026 retrying to connect to mongo:27017 (3/10)
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+Mon Oct 19 03:21:54 UTC 2026 retrying to connect to mongo:27017 (4/10)
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+Mon Oct 19 03:22:00 UTC 2026 retrying to connect to mongo:27017 (5/10)
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube> kubectl logs mongo-express-deployment-588c6867f-c9gr2
+Waiting for mongo:27017...
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+Mon Oct 19 03:21:42 UTC 2026 retrying to connect to mongo:27017 (2/10)
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+Mon Oct 19 03:21:48 UTC 2026 retrying to connect to mongo:27017 (3/10)
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+Mon Oct 19 03:21:54 UTC 2026 retrying to connect to mongo:27017 (4/10)
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+Mon Oct 19 03:22:00 UTC 2026 retrying to connect to mongo:27017 (5/10)
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+Mon Oct 19 03:22:06 UTC 2026 retrying to connect to mongo:27017 (6/10)
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+Mon Oct 19 03:22:12 UTC 2026 retrying to connect to mongo:27017 (7/10)
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+Mon Oct 19 03:22:18 UTC 2026 retrying to connect to mongo:27017 (8/10)
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+Mon Oct 19 03:22:24 UTC 2026 retrying to connect to mongo:27017 (9/10)
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+Mon Oct 19 03:22:30 UTC 2026 retrying to connect to mongo:27017 (10/10)
+/docker-entrypoint.sh: line 15: mongo: Try again
+/docker-entrypoint.sh: line 15: /dev/tcp/mongo/27017: Invalid argument
+No custom config.js found, loading config.default.js
+Welcome to mongo-express 1.0.2
+------------------------
+
+
+Could not connect to database using connectionString: mongodb://KrizUsername:****@mongodb-service:27017/"
+/app/node_modules/mongodb-connection-string-url/lib/index.js:115
+                throw new MongoParseError('Password contains unescaped characters');
+                      ^
+
+MongoParseError: Password contains unescaped characters
+    at new ConnectionString (/app/node_modules/mongodb-connection-string-url/lib/index.js:115:23)
+    at parseOptions (/app/node_modules/mongodb/lib/connection_string.js:201:17)
+    at new MongoClient (/app/node_modules/mongodb/lib/mongo_client.js:46:63)
+    at /app/node_modules/mongodb/lib/mongo_client.js:238:28
+    at maybeCallback (/app/node_modules/mongodb/lib/utils.js:338:21)
+    at MongoClient.connect (/app/node_modules/mongodb/lib/mongo_client.js:236:42)
+    at file:///app/lib/db.js:84:48
+    at Array.map (<anonymous>)
+    at connect (file:///app/lib/db.js:79:58)
+    at router (file:///app/lib/router.js:59:23)
+
+Node.js v18.20.3
+PS C:\eescamillac\GET_A_JOB_2026\Learning_2026\Amigoscode\Docker_And_Kubernetes\Kubernetes_minikube>
+

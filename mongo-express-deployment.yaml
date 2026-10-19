@@ -1,0 +1,52 @@
+# Mongo express Deployment configuration
+apiVersion: apps/v1 # The apps/v1 group is used for managing deployments in Kubernetes
+kind: Deployment # The kind of resource being created (Deployment)
+metadata:
+  name: mongo-express-deployment # Name of the deployment
+  labels:
+    app: mongo-express # Label to identify the deployment
+spec: # Specification of the deployment
+  replicas: 1 # Number of desired pods ('inside' the deployment)
+  selector:
+    matchLabels:
+      app: mongo-express # Selector to match the labels of the pods
+  template: # Template for the pods to be created by the deployment (<Pod> template)
+    metadata:
+      labels:
+        app: mongo-express # Labels for the pods created by this template
+    spec: # Specification of the <pod> template
+      containers:
+      - name: mongo-express-container # Name of the container
+        image: mongo-express # Docker image for Mongo Express (tag : latest by default) / Default user and password are admin/pass (for the mongo-express Image)
+        ports:
+        - containerPort: 8081 # Bind the container port to the host port (exposed port for Mongo Express)
+        env: # Environment variables for the Mongo Express container
+        - name: ME_CONFIG_MONGODB_ADMINUSERNAME # Environment variable for MongoDB admin username (value is going to be taken from a Secret Kubernetes object)
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret # Name of the Secret object containing the MongoDB credentials
+              key: mongo-root-username # Key in the Secret object for the MongoDB root username
+        - name: ME_CONFIG_MONGODB_ADMINPASSWORD # Environment variable for MongoDB admin password (value is going to be taken from a Secret Kubernetes object)
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret # Name of the Secret object containing the MongoDB credentials
+              key: mongo-root-password # Key in the Secret object for the MongoDB root password
+        - name: ME_CONFIG_MONGODB_SERVER # Environment variable for MongoDB server (value is going to be taken from a Service Kubernetes object)
+          valueFrom:
+            configMapKeyRef:
+              name: mongodb-configmap # Name of the ConfigMap object containing the MongoDB URL
+              key: database_url # Key in the ConfigMap object for the MongoDB URL
+---
+apiVersion: v1 # The v1 group is used for managing services in Kubernetes
+kind: Service # The kind of resource being created (Service)
+metadata:
+  name: mongo-express-service # Name of the service
+spec: # Specification of the service
+  selector:
+    app: mongo-express # Selector to match the labels of the pods
+  type: LoadBalancer # Type of service (LoadBalancer) to expose it externally (EXTERNAL Service)
+  ports:
+    - protocol: TCP # Protocol for the service (TCP)
+      port: 8081 # Port on which the service will Listen INSIDE the Cluster
+      targetPort: 8081 # Target port on the container to which the service will forward traffic (Container port / 'Pod' port)
+      nodePort: 30100 # Node port for the service (used for external access to the service) (30000-32767 range)

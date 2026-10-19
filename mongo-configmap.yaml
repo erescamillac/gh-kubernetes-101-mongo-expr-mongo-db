@@ -1,0 +1,7 @@
+# ConfigMap that contains the MongoDB 'URL' (service name)
+apiVersion: v1 # The v1 group is used for managing ConfigMaps in Kubernetes
+kind: ConfigMap # The kind of resource being created (ConfigMap)
+metadata:
+  name: mongodb-configmap # Name of the ConfigMap
+data: # Data for the ConfigMap
+  database_url: mongodb-service # The MongoDB service name (used by the Mongo Express deployment to connect to the MongoDB instance)

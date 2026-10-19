@@ -1,0 +1,45 @@
+# YAML Manifest file for deploying a MongoDB instance in Kubernetes
+apiVersion: apps/v1 # The apps/v1 gruop is used for managing deployments in Kubernetes
+kind: Deployment # The kind of resource being created (Deployment)
+metadata:
+  name: mongodb-deployment # Name of the deployment
+  labels:
+    app: mongodb # Label to identify the deployment
+spec: # Specification of the deployment
+  replicas: 1 # Number of desired pods ('inside' the deployment)
+  selector:
+    matchLabels:
+      app: mongodb # Selector to match the labels of the pods
+  template: # Template for the pods to be created by the deployment (<Pod> template)
+    metadata:
+      labels:
+        app: mongodb # Labels for the pods created by this template
+    spec: # Specification of the <pod> template
+      containers:
+      - name: mongodb-container # Name of the container
+        image: mongo # Docker image for MongoDB (tag : latest by default)
+        ports:
+        - containerPort: 27017 # Bind the container port to the host port (exposed port for MongoDB)
+        env: # Environment variables for the MongoDB container
+        - name: MONGO_INITDB_ROOT_USERNAME # Environment variable for MongoDB root username (value is going to be taken from a Secret Kubernetes object)
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret # Name of the Secret object containing the MongoDB credentials
+              key: mongo-root-username # Key in the Secret object for the MongoDB root username
+        - name: MONGO_INITDB_ROOT_PASSWORD # Environment variable for MongoDB root password (value is going to be taken from a Secret Kubernetes object)
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret # Name of the Secret object containing the MongoDB credentials
+              key: mongo-root-password # Key in the Secret object for the MongoDB root password
+---
+apiVersion: v1 # The v1 group is used for managing Services in Kubernetes
+kind: Service # The kind of resource being created (Service)
+metadata:
+  name: mongodb-service # Name of the Service
+spec: # Specification of the Service
+  selector:
+    app: mongodb # Selector to match the labels of the pods (to route traffic to the MongoDB pods)
+  ports:
+    - protocol: TCP # Protocol used by the Service (TCP for MongoDB)
+      port: 27017 # Port on which the Service will be exposed
+      targetPort: 27017 # Port on the pod to which the traffic will be directed

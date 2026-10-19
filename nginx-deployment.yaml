@@ -1,0 +1,22 @@
+# Sample Nginx Deployment configuration (manifest file for Kubernetes)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec: # Specification of the deployment
+  replicas: 2 # Number of desired pods ('inside' the deployment)
+  selector:
+    matchLabels:
+      app: nginx
+  template: # Template for the pods to be created by the deployment (<Pod> template)
+    metadata:
+      labels:
+        app: nginx
+    spec: # Specification of the <pod> template
+      containers:
+      - name: nginx-container
+        image: nginx:1.16
+        ports:
+        - containerPort: 80 # Bind the container port to the host port

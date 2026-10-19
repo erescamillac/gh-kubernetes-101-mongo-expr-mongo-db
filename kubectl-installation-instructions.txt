@@ -1,0 +1,197 @@
+##--kubectl Installation instructions--##
+
+1. Download the latest 1.37 patch release binary 
+
+curl.exe -LO "https://dl.k8s.io/release/v1.37.0/bin/windows/amd64/kubectl.exe"
+
+-L: follow LINKS (redirects)
+-O: use the same filename as the remote file.
+
+//**-- --**//
+PS C:\kubectl> curl.exe -LO "https://dl.k8s.io/release/v1.37.0/bin/windows/amd64/kubectl.exe"
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+100 60.51M 100 60.51M   0      0  6.77M      0   00:08   00:08          8.73M
+PS C:\kubectl> ls -Force
+
+    Directorio: C:\kubectl
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---       09/10/2026 11:05 p. m.       63456768 kubectl.exe
+
+PS C:\kubectl>
+//**++ ++**//
+
+2. Validate the binary (optional)
+
+Download the kubectl checksum file:
+
+curl.exe -LO "https://dl.k8s.io/v1.37.0/bin/windows/amd64/kubectl.exe.sha256"
+
+//**-- --**//
+PS C:\kubectl> curl.exe -LO "https://dl.k8s.io/v1.37.0/bin/windows/amd64/kubectl.exe.sha256"
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+100     64 100     64   0      0    102      0                              0
+PS C:\kubectl> ls -Force
+
+    Directorio: C:\kubectl
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---       09/10/2026 11:05 p. m.       63456768 kubectl.exe
+-a---       09/10/2026 11:07 p. m.             64 kubectl.exe.sha256
+
+PS C:\kubectl>
+//**++ ++**//
+
+Validate the kubectl binary against the checksum file:
+
+Using PowerShell to automate the verification using the -eq operator to get a True or False result:
+
+$(Get-FileHash -Algorithm SHA256 .\kubectl.exe).Hash -eq $(Get-Content .\kubectl.exe.sha256)
+
+//**-- --**//
+PS C:\kubectl> $(Get-FileHash -Algorithm SHA256 .\kubectl.exe).Hash -eq $(Get-Content .\kubectl.exe.sha256)
+True
+PS C:\kubectl>
+//**++ ++**//
+
+3. Append or prepend the kubectl binary folder to your PATH environment variable.
+
+C:\kubectl
+C:\kubectl
+C:\kubectl
+
+
+$oldPath = [Environment]::GetEnvironmentVariable('Path', [EnvironmentVariableTarget]::Machine)
+if ($oldPath.Split(';') -inotcontains 'C:\kubectl'){
+  [Environment]::SetEnvironmentVariable('Path', $('C:\kubectl;{0}' -f $oldPath), [EnvironmentVariableTarget]::Machine)
+}
+
+//**-- --**//
+PS C:\kubectl> $oldPath = [Environment]::GetEnvironmentVariable('Path', [EnvironmentVariableTarget]::Machine)
+PS C:\kubectl> if ($oldPath.Split(';') -inotcontains 'C:\kubectl'){
+>>   [Environment]::SetEnvironmentVariable('Path', $('C:\kubectl;{0}' -f $oldPath), [EnvironmentVariableTarget]::Machine)
+>> }
+PS C:\kubectl> [Environment]::GetEnvironmentVariable('Path', [EnvironmentVariableTarget]::Machine)
+C:\kubectl;C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot\bin;C:\Python313\Scripts\;C:\Python313\;C:\Instaladores_EEC\Instalador_Oracle_Database_19c_Win_11\WINDOWS.X64_193000_db_home\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\Java\jdk-10.0.2\bin;C:\Apache_Maven\apache-maven-3.9.9-bin\apache-maven-3.9.9\bin;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Git\cmd;C:\Program Files\GitHub CLI\;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\php848;C:\ProgramData\ComposerSetup\bin;C:\Program Files\MySQL\MySQL Server 8.0\bin;C:\Program Files\PostgreSQL\14\bin;C:\Program Files (x86)\Microsoft SQL Server\170\Tools\Binn\;C:\Program Files\Microsoft SQL Server\170\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\180\Tools\Binn\;C:\Program Files\Microsoft SQL Server\170\DTS\Binn\;C:\Program Files\Amazon\AWSCLIV2\;C:\Temp\lightsailctl;C:\sqlcl\bin;C:\Program Files\PowerShell\7\;C:\Program Files\Calibre2\;C:\Program Files\WSL\;C:\minikube
+PS C:\kubectl>
+//**++ ++**//
+
+4. Test to ensure the version of kubectl is the same as downloaded:
+
+kubectl version --client
+
+//**-- --**//
+PS C:\> kubectl version --client
+Client Version: v1.37.0
+Kustomize Version: v5.8.1
+PS C:\>
+//**++ ++**//
+
+Or use this for detailed view of version:
+
+kubectl version --client --output=yaml
+
+======>> 
+
+~
+~
+~ (Alt + 126)
+(Alt + 126)
+
+**5. (Chocolatey based installation) Navigate to your home directory:
+
+cd ~
+
+//**-- --**//
+PS C:\> cd ~
+PS C:\Users\erick> pwd
+
+Path
+----
+C:\Users\erick
+
+PS C:\Users\erick> ls -Force
+
+    Directorio: C:\Users\erick
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----       30/03/2026 10:27 p. m.                .aws
+d----       19/10/2024 11:33 p. m.                .azure
+d----       24/06/2026 05:12 p. m.                .cache
+d----       27/09/2026 12:03 a. m.                .config
+d----       07/09/2026 05:51 p. m.                .copilot
+d----       24/03/2026 01:15 p. m.                .dbus-keyrings
+d----       08/10/2026 07:55 p. m.                .docker
+d----       05/09/2024 04:15 p. m.                .eclipse
+d----       04/03/2025 10:45 p. m.                .jdks
+d----       20/10/2024 04:39 p. m.                .m2
+d----       24/09/2024 01:13 a. m.                .ms-ad
+d----       21/12/2025 10:09 p. m.                .p2
+d----       13/04/2026 09:26 p. m.                .ssh
+d----       27/01/2026 11:27 p. m.                .sts4
+d----       09/10/2026 10:02 p. m.                .VirtualBox
+d----       19/10/2024 09:00 p. m.                .vscode
+d----       17/05/2026 09:37 p. m.                .vscode-shared
+d--h-       04/03/2025 04:51 p. m.                AppData
+d----       24/09/2026 06:27 p. m.                Calibre Library
+l--hs       04/03/2025 04:50 p. m.                Configuración local -> C:\Users\erick\AppData\Local
+d-r--       04/03/2025 04:56 p. m.                Contacts
+l--hs       04/03/2025 04:50 p. m.                Cookies -> C:\Users\erick\AppData\Local\Microsoft\Windows\INetCookies
+l--hs       04/03/2025 04:50 p. m.                Datos de programa -> C:\Users\erick\AppData\Roaming
+d----       19/10/2024 10:01 p. m.                Documents
+d-r--       09/09/2026 11:29 p. m.                Downloads
+d----       27/11/2025 08:29 p. m.                dwhelper
+d----       05/09/2024 03:48 p. m.                eclipse
+d----       05/09/2024 07:44 p. m.                eclipse-workspace
+l--hs       04/03/2025 04:50 p. m.                Entorno de red -> C:\Users\erick\AppData\Roaming\Microsoft\Windows\Network Shortcuts
+d-r--       04/03/2025 04:56 p. m.                Favorites
+d----       29/11/2025 10:24 p. m.                GlassFish_Server
+d----       05/12/2025 10:40 p. m.                IdeaProjects
+l--hs       04/03/2025 04:50 p. m.                Impresoras -> C:\Users\erick\AppData\Roaming\Microsoft\Windows\Printer Shortcuts
+d--hs       09/10/2026 10:26 p. m.                IntelGraphicsProfiles
+d-r--       04/03/2025 04:56 p. m.                Links
+l--hs       04/03/2025 04:50 p. m.                Menú Inicio -> C:\Users\erick\AppData\Roaming\Microsoft\Windows\Start Menu
+l--hs       04/03/2025 04:50 p. m.                Mis documentos -> C:\Users\erick\Documents
+d-r--       04/03/2025 04:56 p. m.                Music
+lar--       09/10/2026 10:27 p. m.                OneDrive
+d----       14/01/2025 07:22 p. m.                Oracle
+l--hs       04/03/2025 04:50 p. m.                Plantillas -> C:\Users\erick\AppData\Roaming\Microsoft\Windows\Templates
+d----       19/10/2024 10:14 p. m.                Postman
+l--hs       04/03/2025 04:50 p. m.                Reciente -> C:\Users\erick\AppData\Roaming\Microsoft\Windows\Recent
+d-r--       04/03/2025 04:56 p. m.                Saved Games
+d-r--       04/03/2025 04:56 p. m.                Searches
+l--hs       04/03/2025 04:50 p. m.                SendTo -> C:\Users\erick\AppData\Roaming\Microsoft\Windows\SendTo
+d----       20/01/2026 06:05 p. m.                source
+d-r--       04/03/2025 04:56 p. m.                Videos
+d----       22/04/2026 05:40 p. m.                VirtualBox VMs
+d--h-       21/04/2026 09:53 p. m.                WPS Cloud Files
+d----       21/04/2026 05:03 p. m.                WPSDrive
+-a---       04/06/2026 07:28 p. m.            142 .angular-config.json
+-a---       07/07/2025 08:43 p. m.           1302 .bash_history
+-a---       24/09/2026 11:20 p. m.            446 .gitconfig
+-a---       09/02/2026 09:43 p. m.           2206 .h2.server.properties
+-a---       04/10/2026 09:22 p. m.             20 .lesshst
+-a---       12/12/2025 09:18 p. m.             53 .python_history
+-a---       15/02/2026 10:30 p. m.            150 .testcontainers.properties
+-a---       17/05/2026 07:30 p. m.     2973897625 java_error_in_idea.hprof
+-a-h-       09/10/2026 10:10 p. m.       18874368 NTUSER.DAT
+-a-hs       04/03/2025 04:50 p. m.        4636672 ntuser.dat.LOG1
+-a-hs       04/03/2025 04:50 p. m.        2097152 ntuser.dat.LOG2
+-a-hs       29/09/2026 09:38 p. m.          73728 NTUSER.DAT{09488206-f94b-11ef-aa4e-e685cbbcf3b7}.TM.blf
+-a-hs       09/10/2026 10:22 p. m.           4096 NTUSER.DAT{09488206-f94b-11ef-aa4e-e685cbbcf3b7}.TM.blf.cnpf
+-a-hs       29/09/2026 09:38 p. m.         561152 NTUSER.DAT{09488206-f94b-11ef-aa4e-e685cbbcf3b7}.TMContainer00000000000000000001.regtrans-ms
+-a-hs       09/10/2026 10:22 p. m.           4096 NTUSER.DAT{09488206-f94b-11ef-aa4e-e685cbbcf3b7}.TMContainer00000000000000000001.regtrans-ms.cnpf
+-a-hs       29/09/2026 09:38 p. m.         561152 NTUSER.DAT{09488206-f94b-11ef-aa4e-e685cbbcf3b7}.TMContainer00000000000000000002.regtrans-ms
+-a-hs       09/10/2026 10:22 p. m.           4096 NTUSER.DAT{09488206-f94b-11ef-aa4e-e685cbbcf3b7}.TMContainer00000000000000000002.regtrans-ms.cnpf
+---hs       04/03/2025 04:56 p. m.             20 ntuser.ini
+-a---       05/01/2026 02:17 p. m.              0 Sti_Trace.log
+-a---       17/04/2026 11:59 p. m.            270 VM_Oracle_Linux_7_ora_db_19c_orclpdb.sql
+
+PS C:\Users\erick>
+//**++ ++**//
+
